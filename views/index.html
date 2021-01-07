@@ -39,6 +39,16 @@
             height: 100vh;
             margin: auto;
         }
+
+        audio::-webkit-media-controls-timeline,
+        video::-webkit-media-controls-timeline {
+            display: none;
+        }
+
+        audio::-webkit-media-controls,
+        video::-webkit-media-controls {
+            display: none;
+        }
     </style>
 </head>
 
@@ -48,7 +58,7 @@
     <script>
         // $("#slideshow > div:gt(0)").hide();
 
-        // var delay = 5
+        // var dataIn.delay = 5
 
         // setInterval(function () {
         //     $('#slideshow > div:first')
@@ -57,7 +67,7 @@
         //         .fadeIn(1000)
         //         .end()
         //         .appendTo('#slideshow');
-        // }, delay * 1000);
+        // }, dataIn.delay * 1000);
 
         function wait(secondes) {
             var start = new Date().getTime();
@@ -70,7 +80,7 @@
 
 
         (refresh = () => {
-            var content = ["PNG_transparency_demonstration_1.png", "depositphotos_2983099-stock-illustration-grunge-design.jpg", "gif-anime.gif"]
+            var content = ["flower.webm", "PNG_transparency_demonstration_1.png", "depositphotos_2983099-stock-illustration-grunge-design.jpg", "gif-anime.gif"]
             var data = {
                 interval: 0,
                 fadeSpeed: 1000
@@ -99,7 +109,6 @@
 
                 var last = +new Date();
                 var tick = function () {
-                    console.log(el.style.opacity - (new Date() - last) / time)
                     el.style.opacity = el.style.opacity - (new Date() - last) / time;
                     last = +new Date();
 
@@ -112,35 +121,65 @@
             }
 
 
-            content.forEach((element, index) => {
+            content.forEach(async (element, index) => {
                 var extension = element.substring(element.lastIndexOf(".") + 1);
 
                 var extension_image = ["png", "jpg", "jpeg", "gif"]
                 var extension_video = ["mp4", "webm"]
 
-                var delay = 8000
+                var dataIn = {
+                    delay: 8000
+                }
+
+
+
+
+                if (extension_video.includes(extension)) {
+                    let delay;
+                    var vid = document.createElement('video');
+                    vid.src = "contents/" + element;
+                    vid.ondurationchange = async function () {
+                        delay = this.duration
+                        dataIn.delay = this.duration
+                    };
+                    vid.remove()
+                    do {
+                        wait(1)
+                    } while (delay === undefined);
+                };
+
+
+
+
 
                 if (index != 0) {
-                    data.interval = data.interval + delay
+                    data.interval = data.interval + dataIn.delay
                 }
+
 
                 setTimeout(function () {
                     if (extension_image.includes(extension)) {
                         $("#slideshow")[0].innerHTML = `<img src="contents/${element}">`
-                        // $("#slideshow")[0].firstElementChild.fadeOut(1000)
                         fadeIn($("#slideshow").find("img")[0], data.fadeSpeed)
 
                         setTimeout(() => {
                             fadeOut($("#slideshow").find("img")[0], data.fadeSpeed)
-                        }, delay - data.fadeSpeed);
+                        }, dataIn.delay - data.fadeSpeed);
                     } else if (extension_video.includes(extension)) {
                         $("#slideshow")[0].innerHTML = `<video controls autoplay class="l"><source src="contents/${element}"></video>`
+                        fadeIn($("#slideshow").find("video")[0], data.fadeSpeed)
+
+                        console.log(dataIn.delay)
+
+                        setTimeout(() => {
+                            fadeOut($("#slideshow").find("video")[0], data.fadeSpeed)
+                        }, dataIn.delay - data.fadeSpeed);
                     }
 
                     if (index == content.length - 1) {
                         setTimeout(() => {
                             refresh()
-                        }, data.interval - delay)
+                        }, data.interval - dataIn.delay)
                     }
 
                 }, data.interval);
