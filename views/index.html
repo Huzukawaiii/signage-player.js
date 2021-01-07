@@ -54,20 +54,48 @@
 
 <body>
     <div id="slideshow"></div>
-
     <script>
-        // $("#slideshow > div:gt(0)").hide();
+        var content = ["flower.webm", "PNG_transparency_demonstration_1.png", "depositphotos_2983099-stock-illustration-grunge-design.jpg", "gif-anime.gif"]
 
-        // var dataIn.delay = 5
+        var delays = {
 
-        // setInterval(function () {
-        //     $('#slideshow > div:first')
-        //         .fadeOut(1000)
-        //         .next()
-        //         .fadeIn(1000)
-        //         .end()
-        //         .appendTo('#slideshow');
-        // }, dataIn.delay * 1000);
+        }
+
+        content.forEach(async (element, index) => {
+            var extension = element.substring(element.lastIndexOf(".") + 1);
+            var extension_video = ["mp4", "webm"]
+
+            if (extension_video.includes(extension)) {
+                let delay;
+                var vid = document.createElement('video');
+                vid.src = "contents/" + element;
+                vid.ondurationchange = async function () {
+                    delays[element] = this.duration
+                };
+                vid.remove()
+            };
+
+        })
+    </script>
+    <script>
+            // $("#slideshow > div:gt(0)").hide();
+
+            // var dataIn.delay = 5
+
+            // setInterval(function () {
+            //     $('#slideshow > div:first')
+            //         .fadeOut(1000)
+            //         .next()
+            //         .fadeIn(1000)
+            //         .end()
+            //         .appendTo('#slideshow');
+            // }, dataIn.delay * 1000);
+
+
+            (Until = (satement, callback) => {
+                if ()
+
+            })(delays.lenght != 0)
 
         function wait(secondes) {
             var start = new Date().getTime();
@@ -131,31 +159,13 @@
                     delay: 8000
                 }
 
-
-
-
                 if (extension_video.includes(extension)) {
-                    let delay;
-                    var vid = document.createElement('video');
-                    vid.src = "contents/" + element;
-                    vid.ondurationchange = async function () {
-                        delay = this.duration
-                        dataIn.delay = this.duration
-                    };
-                    vid.remove()
-                    do {
-                        wait(1)
-                    } while (delay === undefined);
+                    dataIn.delay = delays[element]
                 };
-
-
-
-
 
                 if (index != 0) {
                     data.interval = data.interval + dataIn.delay
                 }
-
 
                 setTimeout(function () {
                     if (extension_image.includes(extension)) {
