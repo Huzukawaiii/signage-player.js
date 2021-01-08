@@ -4,7 +4,7 @@ const utils = require("./utils");
 const app = express();
 const port = 3000;
 
-fs.readdir("./contents/", async (err, files) => {
+fs.readdir("./public/contents/", async (err, files) => {
     files.forEach((file) => {
         app.get("/contents/" + file, (req, res) => {
             res.sendFile(__dirname + "/contents/" + file);
