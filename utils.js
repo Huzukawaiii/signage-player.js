@@ -48,4 +48,14 @@ module.exports = {
             return self;
         }
     },
+
+    findByValue: (object, value) => {
+        for (const key in object) {
+            if (Object.hasOwnProperty.call(object, key)) {
+                const element = object[key];
+                if (element == value) return { index: key, value: element };
+            }
+        }
+        return false;
+    },
 };
