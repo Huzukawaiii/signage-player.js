@@ -7,13 +7,13 @@ const port = 3000;
 fs.readdir("./public/contents/", async (err, files) => {
     files.forEach((file) => {
         app.get("/contents/" + file, (req, res) => {
-            res.sendFile(__dirname + "/contents/" + file);
+            res.sendFile(__dirname + "/public/contents/" + file);
         });
     });
 });
 
 app.get("/", async (req, res) => {
-    fs.readdir("./contents/", (err, files) => {
+    fs.readdir("./public/contents/", (err, files) => {
         fs.readFile("./public/index.html", (err, data) => {
             res.send(
                 utils.replaceByList(data.toString(), {
