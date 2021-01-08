@@ -1,11 +1,29 @@
 const express = require("express");
+const fileUpload = require("express-fileupload");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
+const sharp = require("sharp");
+const _ = require("lodash");
 const fs = require("fs");
 const utils = require("./utils");
 var config = require("./config.json");
-const { resolve } = require("path");
-const { promises } = require("dns");
+
 const app = express();
 const port = 3000;
+
+app.use(
+    fileUpload({
+        createParentPath: true,
+    })
+);
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+
+app.set("view engine", "ejs");
 
 (refreshAll = (resolve_) => {
     fs.readdirSync("./public/contents/").forEach((file, index) => {
@@ -64,23 +82,29 @@ const port = 3000;
 })();
 
 app.get("/", async (req, res) => {
-    refreshAll();
+    var promise = new Promise((resolve, reject) => {
+        refreshAll(resolve);
+    });
 
-    var list = [];
+    promise.then(() => {
+        var list = [];
 
-    for (const key in config.order) {
-        if (Object.hasOwnProperty.call(config.order, key)) {
-            const element = config.order[key];
-            list.push(element);
+        for (const key in config.order) {
+            if (Object.hasOwnProperty.call(config.order, key)) {
+                const element = config.order[key];
+                list.push(element);
+                console.log(1);
+            }
         }
-    }
 
-    fs.readFile("./public/index.html", (err, data) => {
-        res.send(
-            utils.replaceByList(data.toString(), {
-                data1: JSON.stringify(list),
-            })
-        );
+        fs.readFile("./public/index.html", (err, data) => {
+            res.send(
+                utils.replaceByList(data.toString(), {
+                    data1: JSON.stringify(list),
+                })
+            );
+            console.log(list);
+        });
     });
 });
 
@@ -113,6 +137,7 @@ app.get("/manage", async (req, res) => {
 });
 
 app.get("/request/order", async (req, res) => {
+    console.log("lele");
     var index = req.query.id;
     var mode = req.query.mode;
     var otherIndex;
@@ -129,18 +154,30 @@ app.get("/request/order", async (req, res) => {
         }
 
         if (parseInt(index) + 1 > size) {
-            return res.send(
-                "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
-            );
+            var promise = new Promise((resolve, reject) => {
+                refreshAll(resolve);
+            });
+
+            promise.then(() => {
+                return res.send(
+                    "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
+                );
+            });
         }
     } else if (mode == "up") {
         if (config.order[(parseInt(index) - 1).toString()]) {
             otherIndex = (parseInt(index) - 1).toString();
         }
         if (parseInt(index) - 1 <= 0) {
-            return res.send(
-                "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
-            );
+            var promise = new Promise((resolve, reject) => {
+                refreshAll(resolve);
+            });
+
+            promise.then(() => {
+                return res.send(
+                    "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
+                );
+            });
         }
     }
 
@@ -155,6 +192,16 @@ app.get("/request/order", async (req, res) => {
         fs.writeFile("./config.json", JSON.stringify(config), () => {});
         config = require("./config.json");
     }
+});
+
+app.post("/request/add", async (req, res) => {
+    await sharp(req.files.fileToUpload.data)
+        .toFile("./public/contents/" + req.files.fileToUpload.name)
+        .then(() => {
+            return res.send(
+                "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
+            );
+        });
 });
 
 app.listen(port, () => {
