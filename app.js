@@ -1,7 +1,10 @@
 const express = require("express");
 const fs = require("fs");
+const utils = require("./utils");
 const app = express();
 const port = 3000;
+
+"".replaceList({ lel: "le" });
 
 fs.readdir("./contents/", async (err, files) => {
     files.forEach((file) => {
@@ -205,6 +208,12 @@ app.get("/", async (req, res) => {
 </body>
 
 </html>`);
+    });
+});
+
+app.get("/manage", async (req, res) => {
+    fs.readFile("./public/manage.html", (err, data) => {
+        res.send(data.toString().replace(/{{data1}}/g, "lel"));
     });
 });
 
