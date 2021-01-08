@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 module.exports = {
     replaceByList: (self, array) => {
         if (array === undefined) return undefined;
@@ -63,5 +65,31 @@ module.exports = {
         var textArea = document.createElement("textarea");
         textArea.innerText = text;
         return textArea.innerHTML;
+    },
+
+    readFromFile: (path, file) => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(path + file, function (err, data) {
+                if (err) {
+                    resolve("");
+                } else {
+                    resolve(file);
+                }
+            });
+        });
+    },
+
+    ArrayToObject: (array, increment) => {
+        var object = {};
+
+        array.forEach((element, index) => {
+            if (typeof index == "number" && increment != undefined) {
+                object[index + increment] = element;
+            } else {
+                object[index] = element;
+            }
+        });
+
+        return object;
     },
 };

@@ -2,11 +2,13 @@ const express = require("express");
 const fs = require("fs");
 const utils = require("./utils");
 var config = require("./config.json");
+const { resolve } = require("path");
+const { promises } = require("dns");
 const app = express();
 const port = 3000;
 
-fs.readdir("./public/contents/", async (err, files) => {
-    files.forEach((file, index) => {
+(refreshAll = (resolve_) => {
+    fs.readdirSync("./public/contents/").forEach((file, index) => {
         if (utils.findByValue(config.order, file) == false) {
             config.order[index + 1] = file;
             fs.writeFile("./config.json", JSON.stringify(config), () => {});
@@ -18,10 +20,51 @@ fs.readdir("./public/contents/", async (err, files) => {
             res.sendFile(__dirname + "/public/contents/" + file);
         });
     });
-});
+
+    const promises = [];
+
+    for (const key in config.order) {
+        if (Object.hasOwnProperty.call(config.order, key)) {
+            const element = config.order[key];
+            promises.push(utils.readFromFile("./public/contents/", element));
+        }
+    }
+
+    Promise.all(promises).then((result) => {
+        var list = {};
+        var index = 0;
+
+        for (const key in utils.ArrayToObject(result, 1)) {
+            if (
+                Object.hasOwnProperty.call(utils.ArrayToObject(result, 1), key)
+            ) {
+                const element = utils.ArrayToObject(result, 1)[key];
+                if (element !== "") {
+                    index += 1;
+                    list[index] = element;
+                }
+            }
+        }
+
+        config.order = list;
+        if (JSON.stringify(list) != JSON.stringify(config.order)) {
+            promise = new Promise((resolve, reject) => {
+                fs.writeFile("./config.json", JSON.stringify(config), () => {
+                    resolve();
+                });
+            });
+            promise.then(() => {
+                refreshAll(resolve_);
+            });
+        } else {
+            config = require("./config.json");
+            if (resolve_) resolve_();
+        }
+    });
+})();
 
 app.get("/", async (req, res) => {
-    config = require("./config.json");
+    refreshAll();
 
     var list = [];
 
@@ -42,24 +85,30 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/manage", async (req, res) => {
-    var content_list = "";
+    var promise = new Promise((resolve, reject) => {
+        refreshAll(resolve);
+    });
 
-    for (const key in config.order) {
-        if (Object.hasOwnProperty.call(config.order, key)) {
-            const element = config.order[key];
-            content_list += `<tr><th scope="row">${key}</th><td>${element}</td><td><code>${element.substring(
-                element.lastIndexOf(".") + 1
-            )}</code></td><td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'down')"><i class="fas fa-caret-square-down"></i></button></td></tr>`;
+    promise.then(() => {
+        var content_list = "";
+
+        for (const key in config.order) {
+            if (Object.hasOwnProperty.call(config.order, key)) {
+                const element = config.order[key];
+                content_list += `<tr><th scope="row">${key}</th><td>${element}</td><td><code>${element.substring(
+                    element.lastIndexOf(".") + 1
+                )}</code></td><td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'down')"><i class="fas fa-caret-square-down"></i></button></td></tr>`;
+            }
         }
-    }
 
-    fs.readFile("./public/manage.html", (err, data) => {
-        res.send(
-            utils.replaceByList(data.toString(), {
-                "table-content": content_list,
-                config: JSON.stringify(require("./config.json")),
-            })
-        );
+        fs.readFile("./public/manage.html", (err, data) => {
+            res.send(
+                utils.replaceByList(data.toString(), {
+                    "table-content": content_list,
+                    config: JSON.stringify(require("./config.json")),
+                })
+            );
+        });
     });
 });
 
@@ -106,9 +155,6 @@ app.get("/request/order", async (req, res) => {
         fs.writeFile("./config.json", JSON.stringify(config), () => {});
         config = require("./config.json");
     }
-
-    console.log(index);
-    console.log(otherIndex);
 });
 
 app.listen(port, () => {
