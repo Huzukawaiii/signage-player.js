@@ -3,9 +3,9 @@ const fileUpload = require("express-fileupload");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
-const sharp = require("sharp");
+const busboy = require("connect-busboy");
+const fs = require("fs-extra");
 const _ = require("lodash");
-const fs = require("fs");
 const utils = require("./utils");
 var config = require("./config.json");
 
@@ -19,6 +19,7 @@ app.use(
 );
 
 app.use(cors());
+app.use(busboy());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -159,9 +160,7 @@ app.get("/request/order", async (req, res) => {
             });
 
             promise.then(() => {
-                return res.send(
-                    "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
-                );
+                return res.redirect("/manage");
             });
         }
     } else if (mode == "up") {
@@ -174,9 +173,7 @@ app.get("/request/order", async (req, res) => {
             });
 
             promise.then(() => {
-                return res.send(
-                    "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
-                );
+                return res.redirect("/manage");
             });
         }
     }
@@ -194,15 +191,7 @@ app.get("/request/order", async (req, res) => {
     }
 });
 
-app.post("/request/add", async (req, res) => {
-    await sharp(req.files.fileToUpload.data)
-        .toFile("./public/contents/" + req.files.fileToUpload.name)
-        .then(() => {
-            return res.send(
-                "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
-            );
-        });
-});
+app.post("/request/add", function (req, res) {});
 
 app.listen(port, () => {
     console.log(`App listening at http://127.0.0.1:${port}`);
