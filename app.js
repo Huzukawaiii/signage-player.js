@@ -14,7 +14,7 @@ fs.readdir("./public/contents/", async (err, files) => {
 
         config = require("./config.json");
 
-        app.get("/contents/" + file, (req, res) => {
+        app.get(encodeURI("/contents/" + file), (req, res) => {
             res.sendFile(__dirname + "/public/contents/" + file);
         });
     });

@@ -58,4 +58,10 @@ module.exports = {
         }
         return false;
     },
+
+    encodeHTMLEntities: (text) => {
+        var textArea = document.createElement("textarea");
+        textArea.innerText = text;
+        return textArea.innerHTML;
+    },
 };
