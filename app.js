@@ -25,10 +25,20 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/manage", async (req, res) => {
+    var content_list = "";
+
+    fs.readdir("./public/contents/", async (err, files) => {
+        files.forEach((file, index) => {
+            content_list += `<tr><th scope="row">${index}</th><td>${file}</td><td><code>${file.substring(
+                file.lastIndexOf(".") + 1
+            )}</code></td><td><i class="fas fa-caret-square-up"></i> <i class="fas fa-caret-square-down"></i></td></tr>`;
+        });
+    });
+
     fs.readFile("./public/manage.html", (err, data) => {
         res.send(
             utils.replaceByList(data.toString(), {
-                data1: "lelcarry",
+                "table-content": content_list,
             })
         );
     });
