@@ -72,6 +72,18 @@ app.get("/request/order", async (req, res) => {
         if (config.order[(parseInt(index) + 1).toString()]) {
             otherIndex = (parseInt(index) + 1).toString();
         }
+
+        var size = 0,
+            key;
+        for (key in config.order) {
+            if (config.order.hasOwnProperty(key)) size++;
+        }
+
+        if (parseInt(index) + 1 > size) {
+            return res.send(
+                "<script>window.location.href = 'http://127.0.0.1:3000/manage'</script>"
+            );
+        }
     } else if (mode == "up") {
         if (config.order[(parseInt(index) - 1).toString()]) {
             otherIndex = (parseInt(index) - 1).toString();
