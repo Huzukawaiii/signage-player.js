@@ -80,14 +80,32 @@
         crossorigin="anonymous"></script>
     <script>
         function change_order(index, mode) {
-
             $.ajax({
-                method: "GET",
+                method: "POST",
                 url: "http://127.0.0.1:3000/request/order",
                 data: { id: index, "mode": mode }
-            })
+            }).done(function (data) {
+                var data = JSON.parse(data)
 
-            window.location.href = "http://127.0.0.1:3000/manage"
+                console.log(data)
+
+                if (data.status == "done") {
+                    if (mode == "up") {
+                        $(function () {
+                            $.each($("table tbody"), function () {
+                                $(this).children(`:eq(${parseInt(index) - 1})`).after($(this).children(`:eq(${parseInt(index) - 2})`));
+                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index)}">${parseInt(index)}</a>`
+                                $(this).children(`:eq(${parseInt(index) - 2})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index) - 1}">${parseInt(index) - 1}</a>`
+                                
+                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(3)")[0].outerHTML = `<td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'down')"><i class="fas fa-caret-square-down"></i></button></td>`
+                                $(this).children(`:eq(${parseInt(index) - 2})`).children(":eq(3)")[0].outerHTML=`<td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'down')"><i class="fas fa-caret-square-down"></i></button></td>`
+                            });
+                        });
+                    } else {
+
+                    }
+                }
+            })
         }
     </script>
 </body>

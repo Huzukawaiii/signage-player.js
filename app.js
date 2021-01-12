@@ -120,7 +120,7 @@ app.get("/manage", async (req, res) => {
         for (const key in config.order) {
             if (Object.hasOwnProperty.call(config.order, key)) {
                 const element = config.order[key];
-                content_list += `<tr><th scope="row">${key}</th><td>${element}</td><td><code>${element.substring(
+                content_list += `<tr><th scope="row"><a name="${key}">${key}</a></th><td>${element}</td><td><code>${element.substring(
                     element.lastIndexOf(".") + 1
                 )}</code></td><td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'down')"><i class="fas fa-caret-square-down"></i></button></td></tr>`;
             }
@@ -137,11 +137,21 @@ app.get("/manage", async (req, res) => {
     });
 });
 
-app.get("/request/order", async (req, res) => {
-    console.log("lele");
-    var index = req.query.id;
-    var mode = req.query.mode;
+/*
+    $(function() {
+        jQuery.each($("table tbody"), function() { 
+            $(this).children(":eq(2)").after($(this).children(":eq(1)")); 3->2
+        });
+    });
+*/
+
+app.post("/request/order", async (req, res) => {
+    var index = req.body.id;
+    var mode = req.body.mode;
     var otherIndex;
+    var unavailable = false;
+
+    console.log(mode);
 
     if (mode == "down") {
         if (config.order[(parseInt(index) + 1).toString()]) {
@@ -155,39 +165,35 @@ app.get("/request/order", async (req, res) => {
         }
 
         if (parseInt(index) + 1 > size) {
-            var promise = new Promise((resolve, reject) => {
-                refreshAll(resolve);
-            });
-
-            promise.then(() => {
-                return res.redirect("/manage");
-            });
+            unavailable = true;
+            return res.send("Error");
         }
     } else if (mode == "up") {
         if (config.order[(parseInt(index) - 1).toString()]) {
             otherIndex = (parseInt(index) - 1).toString();
         }
-        if (parseInt(index) - 1 <= 0) {
-            var promise = new Promise((resolve, reject) => {
-                refreshAll(resolve);
-            });
 
-            promise.then(() => {
-                return res.redirect("/manage");
-            });
+        if (parseInt(index) - 1 <= 0) {
+            unavailable = true;
+            return res.send("Error");
         }
     }
 
-    if (otherIndex === undefined) {
-        config.order[(parseInt(index) + 1).toString()] = config.order[index];
-        fs.writeFile("./config.json", JSON.stringify(config), () => {});
-        config = require("./config.json");
-    } else {
-        var other_element = config.order[otherIndex];
-        config.order[otherIndex] = config.order[index];
-        config.order[index] = other_element;
-        fs.writeFile("./config.json", JSON.stringify(config), () => {});
-        config = require("./config.json");
+    if (!unavailable) {
+        if (otherIndex === undefined) {
+            config.order[(parseInt(index) + 1).toString()] =
+                config.order[index];
+            fs.writeFile("./config.json", JSON.stringify(config), () => {});
+            config = require("./config.json");
+        } else {
+            var other_element = config.order[otherIndex];
+            config.order[otherIndex] = config.order[index];
+            config.order[index] = other_element;
+            fs.writeFile("./config.json", JSON.stringify(config), () => {});
+            config = require("./config.json");
+        }
+
+        res.send(JSON.stringify({ status: "done", otherIndex: otherIndex }));
     }
 });
 
