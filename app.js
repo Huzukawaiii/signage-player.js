@@ -28,16 +28,26 @@ app.set("view engine", "ejs");
 
 (refreshAll = (resolve_) => {
     fs.readdirSync("./public/contents/").forEach((file, index) => {
-        if (utils.findByValue(config.order, file) == false) {
-            config.order[index + 1] = file;
-            fs.writeFile("./config.json", JSON.stringify(config), () => {});
+        var extension = file.substring(file.lastIndexOf(".") + 1);
+
+        var extension_image = ["png", "jpg", "jpeg", "gif"];
+        var extension_video = ["mp4", "webm", "mov"];
+
+        if (
+            extension_image.includes(extension) ||
+            extension_video.includes(extension)
+        ) {
+            if (utils.findByValue(config.order, file) == false) {
+                config.order[index + 1] = file;
+                fs.writeFile("./config.json", JSON.stringify(config), () => {});
+            }
+
+            config = require("./config.json");
+
+            app.get(encodeURI("/contents/" + file), (req, res) => {
+                res.sendFile(__dirname + "/public/contents/" + file);
+            });
         }
-
-        config = require("./config.json");
-
-        app.get(encodeURI("/contents/" + file), (req, res) => {
-            res.sendFile(__dirname + "/public/contents/" + file);
-        });
     });
 
     const promises = [];
@@ -141,14 +151,6 @@ app.get("/manage", async (req, res) => {
     });
 });
 
-/*
-    $(function() {
-        jQuery.each($("table tbody"), function() { 
-            $(this).children(":eq(2)").after($(this).children(":eq(1)")); 3->2
-        });
-    });
-*/
-
 app.post("/request/order", async (req, res) => {
     var index = req.body.id;
     var mode = req.body.mode;
@@ -223,6 +225,28 @@ app.post("/request/add", async function (req, res) {
     }
 
     res.send("<script>window.location.href='/manage'</script>");
+});
+
+app.post("/request/remove", async function (req, res) {
+    var data = req.body;
+
+    if (data !== undefined && data.id !== undefined) {
+        console.log("./public/contents/" + config.order[data.id.toString()]);
+        await fs.removeSync(
+            "./public/contents/" + config.order[data.id.toString()]
+        );
+        res.send(
+            JSON.stringify({
+                status: "done",
+            })
+        );
+    } else {
+        res.send(
+            JSON.stringify({
+                status: "error",
+            })
+        );
+    }
 });
 
 app.listen(port, () => {

@@ -132,12 +132,15 @@
         function remove(index) {
             $.ajax({
                 method: "POST",
-                url: "http://127.0.0.1:3000/request/delete",
+                url: "http://127.0.0.1:3000/request/remove",
                 data: { id: index }
             }).done(function (data) {
                 var data = JSON.parse(data)
                 console.log(data)
-                
+
+                if (data.status == "done")
+                    window.location.href = "/manage";
+
             })
         }
     </script>
