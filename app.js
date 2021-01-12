@@ -122,7 +122,11 @@ app.get("/manage", async (req, res) => {
                 const element = config.order[key];
                 content_list += `<tr><th scope="row"><a name="${key}">${key}</a></th><td>${element}</td><td><code>${element.substring(
                     element.lastIndexOf(".") + 1
-                )}</code></td><td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'down')"><i class="fas fa-caret-square-down"></i></button></td></tr>`;
+                )}</code></td><td>
+                <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'up')"><i class="fas fa-caret-square-up"></i></button> 
+                <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${key}, 'down')"><i class="fas fa-caret-square-down"></i></button> 
+                <button style="background: transparent; color: #fff;border: none !important;" onclick="remove(${key})"><i style="color: red;" class="fas fa-minus-square"></i></button>
+                </td></tr>`;
             }
         }
 
@@ -183,13 +187,21 @@ app.post("/request/order", async (req, res) => {
         if (otherIndex === undefined) {
             config.order[(parseInt(index) + 1).toString()] =
                 config.order[index];
-            fs.writeFile("./config.json", JSON.stringify(config), () => {});
+            await fs.writeFileSync(
+                "./config.json",
+                JSON.stringify(config),
+                () => {}
+            );
             config = require("./config.json");
         } else {
             var other_element = config.order[otherIndex];
             config.order[otherIndex] = config.order[index];
             config.order[index] = other_element;
-            fs.writeFile("./config.json", JSON.stringify(config), () => {});
+            await fs.writeFileSync(
+                "./config.json",
+                JSON.stringify(config),
+                () => {}
+            );
             config = require("./config.json");
         }
 
@@ -197,7 +209,21 @@ app.post("/request/order", async (req, res) => {
     }
 });
 
-app.post("/request/add", function (req, res) {});
+app.post("/request/add", async function (req, res) {
+    var files = req.files;
+
+    for (const key in files) {
+        if (Object.hasOwnProperty.call(files, key)) {
+            const element = files[key];
+            await fs.writeFileSync(
+                "./public/contents/" + element.name,
+                element.data
+            );
+        }
+    }
+
+    res.send("<script>window.location.href='/manage'</script>");
+});
 
 app.listen(port, () => {
     console.log(`App listening at http://127.0.0.1:${port}`);

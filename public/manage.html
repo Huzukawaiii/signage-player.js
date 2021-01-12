@@ -86,9 +86,7 @@
                 data: { id: index, "mode": mode }
             }).done(function (data) {
                 var data = JSON.parse(data)
-
                 console.log(data)
-
                 if (data.status == "done") {
                     if (mode == "up") {
                         $(function () {
@@ -96,15 +94,50 @@
                                 $(this).children(`:eq(${parseInt(index) - 1})`).after($(this).children(`:eq(${parseInt(index) - 2})`));
                                 $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index)}">${parseInt(index)}</a>`
                                 $(this).children(`:eq(${parseInt(index) - 2})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index) - 1}">${parseInt(index) - 1}</a>`
-                                
-                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(3)")[0].outerHTML = `<td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'down')"><i class="fas fa-caret-square-down"></i></button></td>`
-                                $(this).children(`:eq(${parseInt(index) - 2})`).children(":eq(3)")[0].outerHTML=`<td><button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'up')"><i class="fas fa-caret-square-up"></i></button> <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'down')"><i class="fas fa-caret-square-down"></i></button></td>`
+                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(3)")[0].outerHTML = `<td>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'up')"><i class="fas fa-caret-square-up"></i></button> 
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'down')"><i class="fas fa-caret-square-down"></i></button>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="remove(${parseInt(index)})"><i style="color: red;" class="fas fa-minus-square"></i></button>
+                                    </td>`
+                                $(this).children(`:eq(${parseInt(index) - 2})`).children(":eq(3)")[0].outerHTML = `<td>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'up')"><i class="fas fa-caret-square-up"></i></button> 
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) - 1}, 'down')"><i class="fas fa-caret-square-down"></i></button>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="remove(${parseInt(index) - 1})"><i style="color: red;" class="fas fa-minus-square"></i></button>
+                                    </td>`
                             });
                         });
                     } else {
-
+                        $(function () {
+                            $.each($("table tbody"), function () {
+                                $(this).children(`:eq(${parseInt(index)})`).after($(this).children(`:eq(${parseInt(index) - 1})`));
+                                $(this).children(`:eq(${parseInt(index)})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index) + 1}">${parseInt(index) + 1}</a>`
+                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(0)")[0].innerHTML = `<a name="${parseInt(index)}">${parseInt(index)}</a>`
+                                $(this).children(`:eq(${parseInt(index)})`).children(":eq(3)")[0].outerHTML = `<td>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) + 1}, 'up')"><i class="fas fa-caret-square-up"></i></button> 
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index) + 1}, 'down')"><i class="fas fa-caret-square-down"></i></button>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="remove(${parseInt(index) + 1})"><i style="color: red;" class="fas fa-minus-square"></i></button>
+                                    </td>`
+                                $(this).children(`:eq(${parseInt(index) - 1})`).children(":eq(3)")[0].outerHTML = `<td>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'up')"><i class="fas fa-caret-square-up"></i></button> 
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="change_order(${parseInt(index)}, 'down')"><i class="fas fa-caret-square-down"></i></button>
+                                    <button style="background: transparent; color: #fff;border: none !important;" onclick="remove(${parseInt(index)})"><i style="color: red;" class="fas fa-minus-square"></i></button>
+                                    </td>`
+                            });
+                        });
                     }
                 }
+            })
+        }
+
+        function remove(index) {
+            $.ajax({
+                method: "POST",
+                url: "http://127.0.0.1:3000/request/delete",
+                data: { id: index }
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                console.log(data)
+                
             })
         }
     </script>
